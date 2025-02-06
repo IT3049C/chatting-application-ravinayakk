@@ -1,5 +1,5 @@
 const nameInput = document.getElementById("my-name-input");
-const myMessage = document.getElementById("my-message");
+const myMessage = document.getElementById("my-message-input");
 const sendButton = document.getElementById("send-button");
 const chatBox = document.getElementById("chat");
 
@@ -32,31 +32,16 @@ function formatMessage(message, myNameInput) {
   }
 }
 
-function fetchMessages() {
-  return [
-    {
-      id: 1,
-      text: "This is my message",
-      sender: "Ravi Nayak",
-      timestamp: 1537410673072
-    },
-    {
-      id: 2,
-      text: "This is another message",
-      sender: "Ravi Nayak",
-      timestamp: 1537410673072
-    },
-    {
-      id: 3,
-      text: "This is a message from someone else",
-      sender: "Someone Else",
-      timestamp: 1537410673072
-    }
-  ];
+const serverURL = `https://it3049c-chat.fly.dev/messages`;
+
+async function fetchMessages() {
+  const response = await fetch(serverURL);
+  return response.json();
 }
 
-function updateMessages() {
-  const messages = fetchMessages();
+
+async function updateMessages() {
+  const messages = await fetchMessages();
   let formattedMessages = "";
   messages.forEach(message => {
     formattedMessages += formatMessage(message, nameInput.value);
@@ -71,3 +56,23 @@ sendButton.addEventListener("click", function(event) {
   sendMessages(sender, message);
   myMessage.value = "";
 });
+
+function sendMessages(username, text) {
+  const newMessage = {
+    sender: username,
+    text: text,
+    timestamp: new Date()
+  };
+
+  fetch(serverURL, {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(newMessage)
+  });
+}
+
+updateMessages();
+const MILLISECONDS_IN_TEN_SECONDS = 10000;
+setInterval(updateMessages, MILLISECONDS_IN_TEN_SECONDS);
